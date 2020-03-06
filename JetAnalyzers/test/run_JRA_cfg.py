@@ -48,7 +48,7 @@ for k, v in algsizetype.iteritems():
 #! CONDITIONS (DELIVERING JEC BY DEFAULT!)
 #!
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
-process.GlobalTag.globaltag = cms.string('80X_mcRun2_asymptotic_v5_2016PixDynIneff')
+process.GlobalTag.globaltag = cms.string('102X_upgrade2018_realistic_v20')
 
 if conditionsSource != "GT":
     if conditionsSource == "DB":
@@ -76,7 +76,7 @@ try:
 except ImportError:
     print "Couldn't open the external list of files from DAS. If you just checkout out the JetResponseAnalyzer package you will need to make this file yourself. Currently Falling back to opening the list hard-coded in run_JRA_cfg.py. This is not a bad action as long as it is what you intended to have happen."
     inputFiles = cms.untracked.vstring(
-	    'root://cmsxrootd.fnal.gov//store/mc/<path to root file>/<filename>.root',
+	    'root://cmsxrootd.fnal.gov///store/mc/RunIIAutumn18DRPremix/QCD_Pt-15to7000_TuneCP5_Flat2018_13TeV_pythia8/AODSIM/102X_upgrade2018_realistic_v15_ext1-v1/60000/3D5DC49F-5E3B-CD4A-9354-C722F143D3B1.root',
 	    )
     process.source = cms.Source("PoolSource", fileNames = inputFiles )
 
