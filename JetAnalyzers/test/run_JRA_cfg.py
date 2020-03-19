@@ -72,7 +72,7 @@ process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))
 # External Input File (most likely from DAS) #
 ##############################################
 try:
-    process.load("JetMETAnalysis.JetAnalyzers.<filename without extension>")
+    process.load("JetMETAnalysis.JetAnalyzers.input_cff")
 except ImportError:
     print "Couldn't open the external list of files from DAS. If you just checkout out the JetResponseAnalyzer package you will need to make this file yourself. Currently Falling back to opening the list hard-coded in run_JRA_cfg.py. This is not a bad action as long as it is what you intended to have happen."
     inputFiles = cms.untracked.vstring(
