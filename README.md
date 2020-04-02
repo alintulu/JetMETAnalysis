@@ -1,5 +1,65 @@
 JetMETAnalysis
 ==============
+
+### Running locally in container
+
+Create proxy certificate
+
+```
+$ docker run --rm -it -v ProxyVol:/proxyvol -v $PWD:/root/.globus gitlab-registry.cern.ch/clange/grid-proxy-test:master bash
+$ echo '$VOMSPROXY_PASS' | base64 -d | voms-proxy-init --voms cms --out /proxyvol/proxycert
+```
+* `PrxoyVol` shared volume to store proxy certificate
+* `PWD` contains `userkey.pem` and `usercert.pem`
+
+Mount `cvmfs` and start job container
+
+```console
+$ mkdir -p /cvmfs/cms.cern.ch
+$ docker run --rm -it -v ProxyVol:/proxyvol -v $PWD:/code/ -v /cvmfs:/cvmfs/ --env X509_USER_PROXY=/proxyvol/proxycert gitlab-registry.cern.ch/ci-tools/ci-worker:cc7 bash
+```
+
+* `ProxyVol` shared volume to obtain proxy certificate
+* `PWD` contains analysis code and Kerberos keytab
+* `cvmfs` mounted locally
+* `X509_USER_PROXY` environment variable where XrootD will by defult look for proxy certificate
+
+Create environment and compile code
+
+```console
+$ kinit -kt ~/.keytab $USERNAME@CERN.CH
+$ source /cvmfs/cms.cern.ch/cmsset_default.sh
+$ export SCRAM_ARCH=slc7_amd64_gcc700
+$ cmsrel CMSSW_10_6_1
+$ cd CMSSW_10_6_1/src
+$ cmsenv
+$ cp -r ../../code/JetMETAnalysis/ .
+$ scram b
+```
+
+Create file with dataset filenames
+
+```console
+$ export dataset=/QCD_Pt-15to7000_TuneCP5_Flat2018_13TeV_pythia8/RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15_ext1-v1/AODSIM
+$ dasgoclient -dasmaps=/tmp -query="file dataset=$dataset" -json | jq . | jq ".[].file[].name" > filenames.txt
+```
+
+Run first step creaing ntuples of data
+
+```
+$ cmsRun JetMETAnalysis/JetAnalyzers/test/run_JRA_cfg.py
+```
+
+--------------------------------------------
+
+
+
+
+
+
+
+
+
 <!-- MarkdownTOC depth=0 -->
 
 - [Overview](#overview)
