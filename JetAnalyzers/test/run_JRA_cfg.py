@@ -48,7 +48,7 @@ for k, v in algsizetype.iteritems():
 #! CONDITIONS (DELIVERING JEC BY DEFAULT!)
 #!
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
-process.GlobalTag.globaltag = cms.string('102X_upgrade2018_realistic_v20')
+process.GlobalTag.globaltag = cms.string('102X_upgrade2018_realistic_v15')
 
 if conditionsSource != "GT":
     if conditionsSource == "DB":
@@ -66,20 +66,29 @@ if conditionsSource != "GT":
 #!
 #! INPUT
 #!
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))
+nevents = int(os.environ.get('NEVENTS','1000'))
+print('nevents (default=1000)  = %d'.format(nevents)
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(nevents))
 
 ##############################################
 # External Input File (most likely from DAS) #
 ##############################################
-try:
-    process.load("JetMETAnalysis.JetAnalyzers.input_cff")
-except ImportError:
-    print "Couldn't open the external list of files from DAS. If you just checkout out the JetResponseAnalyzer package you will need to make this file yourself. Currently Falling back to opening the list hard-coded in run_JRA_cfg.py. This is not a bad action as long as it is what you intended to have happen."
-    inputFiles = cms.untracked.vstring(
-	    'root://cmsxrootd.fnal.gov///store/mc/RunIIAutumn18DRPremix/QCD_Pt-15to7000_TuneCP5_Flat2018_13TeV_pythia8/AODSIM/102X_upgrade2018_realistic_v15_ext1-v1/60000/3D5DC49F-5E3B-CD4A-9354-C722F143D3B1.root',
-	    )
-    process.source = cms.Source("PoolSource", fileNames = inputFiles )
 
+inputfiles = []
+filename = os.environ.get('INPUTFILES','filenames.txt')
+try:
+    f = open(filename)
+    for line in f:
+        inputfiles.append('root://cmsxrootd.fnal.gov//'+line[1:-2]) # first char " last two chars "\n
+finally:
+    f.close()
+else:
+    inputfiles = 'root://cmsxrootd.fnal.gov///store/mc/RunIIAutumn18DRPremix/QCD_Pt-15to7000_TuneCP5_Flat2018_13TeV_pythia8/AODSIM/102X_upgrade2018_realistic_v15_ext1-v1/60000/3D5DC49F-5E3B-CD4A-9354-C722F143D3B1.root'
+
+inputfiles = inputfiles[:5] # truncate while testing
+print(inputfiles)
+
+process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring(*inputfiles))
 
 #!
 #! SERVICES
