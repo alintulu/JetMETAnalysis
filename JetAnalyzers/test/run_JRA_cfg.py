@@ -67,7 +67,7 @@ if conditionsSource != "GT":
 #! INPUT
 #!
 nevents = int(os.environ.get('NEVENTS','1000'))
-print('nevents (default=1000)  = %d'.format(nevents)
+print('nevents (default=1000)  = %d'.format(nevents))
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(nevents))
 
 ##############################################
