@@ -4,6 +4,7 @@ import FWCore.ParameterSet.Config as cms
 import sys
 import os
 import argparse
+from itertools import islice
 
 inputfile = 'root://cmsxrootd.fnal.gov///store/mc/RunIIAutumn18DRPremix/QCD_Pt-15to7000_TuneCP5_Flat2018_13TeV_pythia8/AODSIM/102X_upgrade2018_realistic_v15_ext1-v1/60000/3D5DC49F-5E3B-CD4A-9354-C722F143D3B1.root'
 outputfile = 'JRA.root'
@@ -13,10 +14,11 @@ parser = argparse.ArgumentParser(description='Change the option prefix character
                                  prefix_chars='+/',
                                  )
 parser.add_argument("cfgfilename", default=progName, action='store', help=argparse.SUPPRESS)
-parser.add_argument("+i", "++input", type=str, nargs='?', default=inputfile, const=inputfile, help="Text file with names of root files")
+parser.add_argument("+i", "++input", nargs='+', type=str)
+#parser.add_argument("+i", "++input", type=str, nargs='?', default=inputfile, const=inputfile, help="Text file with names of root files")
 parser.add_argument("+o", "++output", type=str, nargs='?', default=outputfile, const=outputfile, help="Name of output file")
-parser.add_argument("+sf", "++start-files", type=int, nargs='?', default=0, const=0, help="Start files from here")
-parser.add_argument("+nf", "++number-files", type=int, nargs='?', default=1, const=1, help="Number of root files to read from input")
+#parser.add_argument("+sf", "++start-files", type=int, nargs='?', default=0, const=0, help="Start files from here")
+#parser.add_argument("+nf", "++number-files", type=int, nargs='?', default=1, const=1, help="Number of root files to read from input")
 parser.add_argument("+ne", "++number-events", type=int, nargs='?', default=1000, const=1000, help="Number of events")
 args = parser.parse_args()
 
@@ -99,7 +101,7 @@ process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(nevents))
 ##############################################
 
 #filename = os.environ.get('INPUTFILES', 'filenames.txt')
-
+'''
 filename = args.input
 nfiles = args.number_files
 print 'nfiles (default=1)  = {}'.format(nfiles)
@@ -109,14 +111,15 @@ f = None
 try:
     f = open(filename, 'r')
     if nfiles > 0:
-        for i in range(args.start_files):
-            next(f)
-        inputfiles = ['root://cmsxrootd.fnal.gov//'+next(f)[1:-2] for x in xrange(nfiles)]
+        inputfiles = ['root://cmsxrootd.fnal.gov//'+line[1:-2] for line in islice(f, args.start_files, args.start_files + nfiles)]
     else:
         inputfiles = ['root://cmsxrootd.fnal.gov//'+line[1:-2] for line in f]
 finally:
     if f is not None:
         f.close()
+'''
+
+inputfiles = args.input
 
 print inputfiles
 
