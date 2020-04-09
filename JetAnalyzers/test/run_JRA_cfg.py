@@ -2,6 +2,9 @@ from JetMETAnalysis.JetAnalyzers.addAlgorithm import addAlgorithm
 import JetMETAnalysis.JetAnalyzers.Defaults_cff as Defaults
 import FWCore.ParameterSet.Config as cms
 import os
+import sys
+
+print sys.argv
 
 #!
 #! PROCESS
@@ -74,16 +77,20 @@ if conditionsSource != "GT":
 #! INPUT
 #!
 nevents = int(os.environ.get('NEVENTS', '1000'))
-print('nevents (default=1000)  = {}'.format(nevents))
+print 'nevents (default=1000)  = {}'.format(nevents)
 process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(nevents))
 
 ##############################################
 # External Input File (most likely from DAS) #
 ##############################################
 
-inputfiles = 'root://cmsxrootd.fnal.gov///store/mc/RunIIAutumn18DRPremix/QCD_Pt-15to7000_TuneCP5_Flat2018_13TeV_pythia8/AODSIM/102X_upgrade2018_realistic_v15_ext1-v1/60000/3D5DC49F-5E3B-CD4A-9354-C722F143D3B1.root'
+#filename = os.environ.get('INPUTFILES', 'filenames.txt')
 
-filename = os.environ.get('INPUTFILES', 'filenames.txt')
+if len(sys.argv) >= 2:
+    filename = sys.argv[2]
+else:
+    inputfiles = 'root://cmsxrootd.fnal.gov///store/mc/RunIIAutumn18DRPremix/QCD_Pt-15to7000_TuneCP5_Flat2018_13TeV_pythia8/AODSIM/102X_upgrade2018_realistic_v15_ext1-v1/60000/3D5DC49F-5E3B-CD4A-9354-C722F143D3B1.root'
+
 try:
     f = open(filename)
     inputfiles = []
@@ -91,7 +98,6 @@ try:
         # first char " last two chars "\n
         inputfiles.append('root://cmsxrootd.fnal.gov//'+line[1:-2])
 finally:
-    inputfiles = inputfiles[:5]  # truncate while testing
     f.close()
 
 print inputfiles
@@ -99,6 +105,11 @@ print inputfiles
 process.source = cms.Source(
     "PoolSource", fileNames=cms.untracked.vstring(*inputfiles))
 
+
+outputname = 'JRA.root'
+
+if len(sys.argv) >= 3:
+    outputname = sys.argv[3]
 
 #!
 #! SERVICES
@@ -112,7 +123,7 @@ if doProducer:
     process.options.numberOfStreams = cms.untracked.uint32(0)
 else:
     process.load('CommonTools.UtilAlgos.TFileService_cfi')
-    process.TFileService.fileName = cms.string('JRA.root')
+    process.TFileService.fileName = cms.string(outputname)
 
 
 #!
@@ -156,9 +167,12 @@ if printOC:
 #!
 #! Output
 #!
+
+#outputname = os.environ.get('OUTPUT', 'JRA.root')
+
 if doProducer:
     process.out = cms.OutputModule("PoolOutputModule",
-                                   fileName=cms.untracked.string('JRAP.root'),
+                                   fileName=cms.untracked.string(outputname),
                                    outputCommands=outCom
                                    )
     process.e = cms.EndPath(process.out)
