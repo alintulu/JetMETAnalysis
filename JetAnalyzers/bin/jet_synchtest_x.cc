@@ -214,6 +214,7 @@ void MatchEventsAndJets::SetupLumiWeights(string dataFile, string mcFile, string
    }
    else {
       cout << "WARNING::MatchEventsAndJets::SetupLumiWeights LumiWeights not set." << std::endl
+           << dataFile << std::endl
            << "\tOne or both of the input files was not set." << endl << endl;
    }
 }
@@ -1474,7 +1475,7 @@ int main(int argc,char**argv)
    if (!cl.parse(argc,argv)) return 0;
    string       samplePU          = cl.getValue<string>  ("samplePU");
    string       sampleNoPU        = cl.getValue<string>  ("sampleNoPU");
-   string       basepath          = cl.getValue<string>  ("basepath", "/fdata/hepx/store/user/aperloff/");
+   string       basepath          = cl.getValue<string>  ("basepath", "/afs/cern.ch/user/a/adlintul/CMSSW_10_6_1/src/");
    string       algo1             = cl.getValue<string>  ("algo1",                               "ak5pf");
    string       algo2             = cl.getValue<string>  ("algo2",                               "ak5pf");
    bool         iftest            = cl.getValue<bool>    ("iftest",                                false);
@@ -1531,9 +1532,15 @@ int main(int argc,char**argv)
    mej->SetMaxEvts(maxEvts);
    mej->SetNRefMax(nrefmax);
    mej->SetWeightParameters(useweight,pThatReweight,bias2SelectionRef,bias2SelectionPow);
+
+   cout << "Before" << endl;
+
    mej->SetupLumiWeights((DataPUReWeighting.empty())? "" : basepath+DataPUReWeighting,
                          (MCPUReWeighting.empty()) ? "" : basepath+MCPUReWeighting,
                          DataPUHistoName,MCPUHistoName);
+
+   cout << "After" << endl;
+
    mej->OpenInputFiles(basepath+samplePU,basepath+sampleNoPU);
    mej->GetNtuples(treeName);
    if(readEvtMaps.empty())
