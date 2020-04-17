@@ -1449,7 +1449,7 @@ void MatchEventsAndJets::WriteOutput(string outputPath, bool writeJetMap){
    fout->Close();
    cout << "DONE" << endl;
 
-   if(false && writeJetMap && !doNotSaveFlag) {
+   if(writeJetMap && !doNotSaveFlag) {
       cout << endl << "Saving the jetMapTree to a file for later use ... " << flush;
       string outputFilename = "matchedEventsMaps_"+algo1+"_"+algo2+".root";
       if (algo1 == algo2)
@@ -1541,9 +1541,15 @@ int main(int argc,char**argv)
    mej->SetMaxEvts(maxEvts);
    mej->SetNRefMax(nrefmax);
    mej->SetWeightParameters(useweight,pThatReweight,bias2SelectionRef,bias2SelectionPow);
+
+   cout << "Before" << endl;
+
    mej->SetupLumiWeights((DataPUReWeighting.empty())? "" : basepath+DataPUReWeighting,
                          (MCPUReWeighting.empty()) ? "" : basepath+MCPUReWeighting,
                          DataPUHistoName,MCPUHistoName);
+
+   cout << "After" << endl;
+
    mej->OpenInputFiles(basepath+samplePU,basepath+sampleNoPU);
    mej->GetNtuples(treeName);
    if(readEvtMaps.empty())

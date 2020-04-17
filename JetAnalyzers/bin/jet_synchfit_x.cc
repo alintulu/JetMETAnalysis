@@ -569,10 +569,15 @@ int main(int argc,char**argv){
       fitfunc->Write();
    }// eta bins
    
+   cout<<"\t Writing output..." << endl;
+
    // Create the txt file from the fitResults vector
-   TString txtFilename = outputDir+era+"_L1FastJet_"+((algo1.EqualTo(algo2)) ? JetInfo(algo12).alias : algo12)+".txt";
+   //TString txtFilename = outputDir+era+"_L1FastJet_"+((algo1.EqualTo(algo2)) ? JetInfo(algo12).alias : algo12)+".txt";
+   TString txtFilename = "CondFormats/JetMETObjects/data/" + era + "_L1FastJet.txt" //+ get_algorithm_suffix(aalgo1) + ".txt"; // TString txtFilename = "parameters_"+algo12+".txt";
    createTxtFile(txtFilename, fitResults);
    
+   cout<<"\t Wrote output..." << endl;
+
    // Create the canvas with all parameters vs eta.
    TString pdfFilename = outputDir+"Parameter_"+algo12+".pdf";
    createPDFFile(fout, pdfFilename, fitResults);

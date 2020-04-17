@@ -13,11 +13,12 @@ parser = argparse.ArgumentParser(description='Change the option prefix character
                                  )
 parser.add_argument("cfgfilename", default=progName, action='store', help=argparse.SUPPRESS)
 parser.add_argument("+i", "++input", type=str, nargs='?', help="Text file with names of root files")
-parser.add_argument("+o", "++output", type=str, nargs='?', default='JRAheeey{}.root', help="Name of output file")
+parser.add_argument("+o", "++output", type=str, nargs='?', default='/eos/user/a/adlintul/JRA/{0}/JRA{1}.root', help="Name of output file")
 parser.add_argument("+sf", "++start-files", type=int, nargs='?', default=0, help="Start files from here")
 parser.add_argument("+b", "++batch-size", type=int, nargs='?', default=1, help="Number of root files to read from input")
 parser.add_argument("+ne", "++number-events", type=int, nargs='?', default=1000, help="Number of events")
 parser.add_argument("+id", "++job-id", type=int)
+parser.add_argument("+pu", "++pu_type", type=str, default='PU')
 args = parser.parse_args()
 
 #!
@@ -42,8 +43,8 @@ if doProducer:
 # Size options: integers 1-10
 # Jet type options: calo, pf, pfchs, puppi
 # Correction levels: '' (blank), l1, l2, l3, l2l3, l1l2l3
-algsizetype = {'ak': [4, 8]}
-jettype = ['pf', 'pfchs', 'puppi']
+algsizetype = {'ak': [4]}
+jettype = ['pf']
 corrs = ['']
 
 algorithms = []
@@ -120,11 +121,9 @@ finally:
 process.source = cms.Source(
     "PoolSource", fileNames=cms.untracked.vstring(*inputfiles))
 
-print args.output
+outputname = args.output.format(args.pu_type, args.job_id)
 
-outputname = args.output.format(args.job_id)
-
-print outputname
+print 'Output written to ' + outputname
 
 #!
 #! SERVICES
@@ -185,7 +184,7 @@ if printOC:
 
 if doProducer:
     process.out = cms.OutputModule("PoolOutputModule",
-                                   fileName=cms.untracked.string(outputname),
+                                   fileName=cms.untracked.string('JRAP.root'),
                                    outputCommands=outCom
                                    )
     process.e = cms.EndPath(process.out)
