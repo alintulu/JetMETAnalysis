@@ -1,8 +1,8 @@
 # Workflow
 
-* [batch](workflow/batch)
+* [batch](batch)
   Contains files for submitting a batch job
-* [scripts](workflow/scripts)
+* [scripts](scripts)
   Contains various helper scripts such as _merging ntuples_ and _resubmitting jobs_
  
 ## Step10: Create ntuples
@@ -11,7 +11,7 @@
   
 First step of the JEC workflow is creating ntuples out of the dataset files. It's quite
 cumbersome and done as a batch job.
-The executable is [step10_ntuple.sh](workflow/batch/step10_ntuple.sh) and
+The executable is [step10_ntuple.sh](batch/step10_ntuple.sh) and
 arguments passed to it is:
 
 1. Valid proxy certificate
@@ -26,7 +26,7 @@ arguments passed to it is:
 ### Resubmit jobs
 
 When batch job is done you need to loop over output files to
-check if some jobs failed and resubmitting them is necessary. It's done with [resubmit.py](workflow/scripts/resubmit.py) that takes
+check if some jobs failed and resubmitting them is necessary. It's done with [resubmit.py](scripts/resubmit.py) that takes
 
 * `-f`  Path to file containing names of files that was given to batch job
 * `-b`  Batch size, same as for batch job submission
@@ -43,19 +43,19 @@ for resubmission.
 ### Merge ntuples
 
 Batch job created mutiple root files (probably around 200-300). Merging them into one file is done
-with the command `hadd` and is done recursively with [merge.sh](workflow/scripts/merge.sh). The script takes
+with the command `hadd` and is done recursively with [merge.sh](scripts/merge.sh). The script takes
 
 * Stem of output files, e.g. `JRA` for `JRA0.root`
 * Batch size, in this case how many files to merge at once
 
 ## Rest of the steps...
 
-Bash scripts for running the rest for the steps, is located in [scripts](workflow/scripts).
+Bash scripts for running the rest for the steps, is located in [scripts](scripts).
 Files namned `step1{1..3}.sh` computes and applies L1 corrections. 
 Files namned `step2{0..3}.sh` computes and applies L2L3 corrections.
 Scripts need some adjusting, but hey at least they run!
 
-The script [step11.sh](workflow/scripts/step11.sh) creates the PU distributions for data and MC.
+The script [step11.sh](scripts/step11.sh) creates the PU distributions for data and MC.
 
 ## To Do
 
