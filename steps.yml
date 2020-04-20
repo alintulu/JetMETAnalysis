@@ -13,3 +13,5 @@ ntuple:
     environment_type: 'docker-encapsulated'
     image: cc7
     imagetag: ci-worker
+    resources:
+      - CVMFS
