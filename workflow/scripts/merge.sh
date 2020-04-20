@@ -13,7 +13,7 @@ merge()
   N=$(ls ${name}*.root | wc -l)
 
   if (( $N <= $batch )); then
-    hadd -k JRA_M_final.root ${name}{1..$N}*.root
+    hadd -k JRA_M_final.root ${name}{0..$N}*.root
   else
     new_id=$(($id+1)) 
     j=0
