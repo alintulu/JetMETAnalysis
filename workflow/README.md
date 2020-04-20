@@ -6,7 +6,32 @@
   Contains various helper scripts such as _merging ntuples_ and _resubmitting jobs_
  
 ## Step10: Create ntuples
- 
+
+### How does it work?
+
+1. Creates N batch jobs. Every job has a unique id between 0 and N-1.
+2. The job id and desired batch size is passed to the script [run_JRA_cfg.py](https://github.com/alintulu/JetMETAnalysis/blob/master/JetAnalyzers/test/run_JRA_cfg.py).
+    * The script runs N times each time with a unique `job_id`.
+3. The script reads the lines `job_id` to `job_id + batch_size` from the input file.
+    * Each line contains name of one root file.
+    * Every job reads `batch_size` number of unique lines.
+    * If the batch size is 2 then first job reads line 0 and 1 i.e. processes the two first
+  root files, next job 2 and 3 etc.
+4. N number of output files are created.
+    * Each output file with a unique name, like `${stem}${job_id}.root` could be `JRA_PU_{0..N-1}.root`.
+5. Loop over the files `${stem}{0..N-1}.root`.
+    * Check that each file exist.
+    * Check that each file has size larger than 50000.
+6. If any of above conditions fail the `job_id` is stored.
+    * Knowing `job_id` and `batch_size` is all we need to know exactly which lines (=root files)
+    was read for the job that failed.
+    * Job that failed is resubmitted.
+7. When all jobs have succeeded it's time to merge the output files.
+    * Do it recursively.
+    * Merge output files is batches of size M.
+    * Merge the output of the previous merging in batches of size M.
+    * Finally merge all output files when the number of files to be merged is smaller than the batch size M, end the recursion.
+    
 ### Submit batch job
   
 First step of the JEC workflow is creating ntuples out of the dataset files. It's quite
