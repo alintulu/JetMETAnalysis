@@ -1,0 +1,13 @@
+version: 0.6.0
+inputs:
+  parameters:
+    input_file: filenamesPU_5.txt
+    batch_size: 2
+    number_events: 0
+    job_id:
+      - 0
+      - 1
+      - 2
+workflow:
+  type: yadage
+  file: workflow.yaml

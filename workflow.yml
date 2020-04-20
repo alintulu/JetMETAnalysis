@@ -1,0 +1,14 @@
+stages:
+- name: ntuple
+  dependencies: [init]
+  scheduler:
+    scheduler_type: multistep-stage
+    parameters:
+      input_file: {step: init, output: input_file}
+      batch_size: {step: init, output: batch_size}
+      job_id: {step: init, output: job_id}
+      number_events: {step: init, output: number_events}
+    scatter:
+       method: zip
+       parameters: [start_idx]
+    step: {$ref: 'steps.yaml#/ntuple'}
