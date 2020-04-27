@@ -1,10 +1,25 @@
 from JetMETAnalysis.JetAnalyzers.addAlgorithm import addAlgorithm
 import JetMETAnalysis.JetAnalyzers.Defaults_cff as Defaults
 import FWCore.ParameterSet.Config as cms
-import os
 import sys
+import os
+import argparse
+from itertools import islice
 
-print sys.argv
+progName = sys.argv[1]
+
+parser = argparse.ArgumentParser(description='Change the option prefix characters',
+                                 prefix_chars='+/',
+                                 )
+parser.add_argument("cfgfilename", default=progName, action='store', help=argparse.SUPPRESS)
+parser.add_argument("+i", "++input", type=str, nargs='?', help="Text file with names of root files")
+parser.add_argument("+o", "++output", type=str, nargs='?', default='/eos/user/a/adlintul/JRA/{0}/JRA{1}.root', help="Name of output file")
+parser.add_argument("+sf", "++start-files", type=int, nargs='?', default=0, help="Start files from here")
+parser.add_argument("+b", "++batch-size", type=int, nargs='?', default=1, help="Number of root files to read from input")
+parser.add_argument("+ne", "++number-events", type=int, nargs='?', default=1000, help="Number of events")
+parser.add_argument("+id", "++job-id", type=int)
+parser.add_argument("+pu", "++pu_type", type=str, default='PU')
+args = parser.parse_args()
 
 #!
 #! PROCESS
@@ -28,7 +43,7 @@ if doProducer:
 # Size options: integers 1-10
 # Jet type options: calo, pf, pfchs, puppi
 # Correction levels: '' (blank), l1, l2, l3, l2l3, l1l2l3
-algsizetype = {'ak': [4, 8]}
+algsizetype = {'ak': [4]}
 jettype = ['pf', 'pfchs', 'puppi']
 corrs = ['']
 
@@ -76,7 +91,11 @@ if conditionsSource != "GT":
 #!
 #! INPUT
 #!
-nevents = int(os.environ.get('NEVENTS', '1000'))
+if args.number_events <= 0:
+    nevents = -1
+else:
+    nevents = args.number_events
+
 print 'nevents (default=1000)  = {}'.format(nevents)
 process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(nevents))
 
@@ -86,30 +105,25 @@ process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(nevents))
 
 #filename = os.environ.get('INPUTFILES', 'filenames.txt')
 
-if len(sys.argv) >= 2:
-    filename = sys.argv[2]
-else:
-    inputfiles = 'root://cmsxrootd.fnal.gov///store/mc/RunIIAutumn18DRPremix/QCD_Pt-15to7000_TuneCP5_Flat2018_13TeV_pythia8/AODSIM/102X_upgrade2018_realistic_v15_ext1-v1/60000/3D5DC49F-5E3B-CD4A-9354-C722F143D3B1.root'
+filename = args.input
 
+inputfiles = []
+f = None
 try:
-    f = open(filename)
-    inputfiles = []
-    for line in f:
-        # first char " last two chars "\n
-        inputfiles.append('root://cmsxrootd.fnal.gov//'+line[1:-2])
+    f = open(filename, 'r')
+    inputfiles = ['root://cmsxrootd.fnal.gov//'+line[1:-2] for line in islice(f, args.start_files, args.start_files + args.batch_size)]
 finally:
-    f.close()
+    if f is not None:
+        f.close()
 
-print inputfiles
+#print inputfiles
 
 process.source = cms.Source(
     "PoolSource", fileNames=cms.untracked.vstring(*inputfiles))
 
+outputname = args.output.format(args.pu_type, args.job_id)
 
-outputname = 'JRA.root'
-
-if len(sys.argv) >= 3:
-    outputname = sys.argv[3]
+print 'Output written to ' + outputname
 
 #!
 #! SERVICES
@@ -168,11 +182,9 @@ if printOC:
 #! Output
 #!
 
-#outputname = os.environ.get('OUTPUT', 'JRA.root')
-
 if doProducer:
     process.out = cms.OutputModule("PoolOutputModule",
-                                   fileName=cms.untracked.string(outputname),
+                                   fileName=cms.untracked.string('JRAP.root'),
                                    outputCommands=outCom
                                    )
     process.e = cms.EndPath(process.out)
