@@ -1,95 +1,156 @@
 import FWCore.ParameterSet.Config as cms
-import JetMETAnalysis.JetAnalyzers.Defaults_cff as Defaults;
 
 #!
 #! PROCESS
 #!
-process = cms.Process("jetresponseanalyzerProcess")
+# Conditions source options: GT, SQLite, DB
+conditionsSource = "GT"
+era = "Spring16_25nsV1_MC"
+doProducer = False
+process = cms.Process("JRA")
+multithread = False
+if doProducer:
+	process = cms.Process("JRAP")
+	multithread = True
 
 
 #!
-#! SERVICES
+#! CHOOSE ALGORITHMS
 #!
-#process.load('Configuration.StandardSequences.Services_cff')
-process.load('FWCore.MessageLogger.MessageLogger_cfi')
-process.MessageLogger.cerr.FwkReport.reportEvery = 2000
-process.load('CommonTools.UtilAlgos.TFileService_cfi')
-process.TFileService.fileName=cms.string('jra.root')
+# Note: Not all combinations of options will work
+# Algorithm options: ak, kt, ic, sc, ca
+# Size options: integers 1-10
+# Jet type options: calo, pf, pfchs, puppi
+# Correction levels: '' (blank), l1, l2, l3, l2l3, l1l2l3
+algsizetype = {'ak':[4,8]}
+jettype = ['pf','pfchs','puppi']
+corrs = ['']
+
+algorithms = []
+jcr = cms.VPSet()
+
+for k, v in algsizetype.iteritems():
+    for s in v:
+	for j in jettype:
+            for c in corrs:
+	        algorithms.append(str(k+str(s)+j+c))
+	        if conditionsSource != "GT":
+                    upperAlg = str(k.upper()+str(s)+j.upper().replace("CHS","chs")).replace("PUPPI","PFPuppi")
+		    jcr.append(cms.PSet(record = cms.string("JetCorrectionsRecord"),
+					tag = cms.string("JetCorrectorParametersCollection_"+era+"_"+upperAlg),
+					label= cms.untracked.string(upperAlg)))
+
+# If need be you can append additional jet collections using the style below
+#algorithms.append('ak5calo')
+
+
+#!
+#! CONDITIONS (DELIVERING JEC BY DEFAULT!)
+#!
+process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
+process.GlobalTag.globaltag = cms.string('106X_upgrade2018_realistic_v11_L1v1')
+
+if conditionsSource != "GT":
+    if conditionsSource == "DB":
+        conditionsConnect = cms.string("frontier://FrontierPrep/CMS_COND_PHYSICSTOOLS")
+    elif conditionsSource == "SQLite":
+	conditionsConnect = cms.string('sqlite_file:'+era+'.db')    
+
+    from CondCore.DBCommon.CondDBSetup_cfi import *
+    process.jec = cms.ESSource("PoolDBESSource",CondDBSetup,
+			       connect = conditionsConnect,
+			       toGet =  cms.VPSet(jcr))
+    process.es_prefer_jec = cms.ESPrefer("PoolDBESSource","jec")
 
 
 #!
 #! INPUT
 #!
-inputFiles = cms.untracked.vstring(
-#############################
-# JRAP PATTuple (Published) #
-#############################
-#'/store/user/aperloff/QCD_Pt-15to3000_TuneZ2star_Flat_8TeV_pythia6/PAT_JRAP_PFchs_53X/ea497ea51a493fe0c576c422ffa32b60/JRAP_264_1_ivm.root',
-#'/store/user/aperloff/QCD_Pt-15to3000_TuneZ2star_Flat_8TeV_pythia6/PAT_JRAP_PFchs_53X/ea497ea51a493fe0c576c422ffa32b60/JRAP_265_1_DUv.root',
-#'/store/user/aperloff/QCD_Pt-15to3000_TuneZ2star_Flat_8TeV_pythia6/PAT_JRAP_PFchs_53X/ea497ea51a493fe0c576c422ffa32b60/JRAP_266_1_LHj.root',
-###############################
-# JRAP PATTuple (Unpublished) #
-###############################
-#'file:/fdata/hepx/store/user/aperloff/QCD_Pt-15to3000_TuneZ2star_Flat_8TeV_pythia6/PAT_JRAP_53X/bcedc6301a9ce8b39e91810d93214040/JRAP_287_1_0s2.root',
-#'file:/fdata/hepx/store/user/aperloff/QCD_Pt-15to3000_TuneZ2star_Flat_8TeV_pythia6/PAT_JRAP_53X/bcedc6301a9ce8b39e91810d93214040/JRAP_288_1_AF4.root',
-#'file:/fdata/hepx/store/user/aperloff/QCD_Pt-15to3000_TuneZ2star_Flat_8TeV_pythia6/PAT_JRAP_53X/bcedc6301a9ce8b39e91810d93214040/JRAP_289_1_T7V.root',
-'file:JRAP.root'
-    )
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))
 
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))
-process.source = cms.Source("PoolSource",
-                            skipEvents = cms.untracked.uint32(0),
-                            fileNames = inputFiles )
-
-
-algsizetype = {'ak':[4]}
-#algsizetype = {'ak':[3,4,5,6,7,8,9,10]}
-jettype = ['pf','pfchs']
-#jettype = ['calo','pf','pfchs']
-corrs = ['']
-#corrs = ['','l1','l2l3']
-size = []
-
-algorithms = []
-
-for k, v in algsizetype.iteritems():
-	for s in v:
-		for j in jettype:
-			for c in corrs:
-				size.append(s/20.0)
-				algorithms.append(str(k+str(s)+j+c))
+##############################################
+# External Input File (most likely from DAS) #
+##############################################
+try:
+    process.load("JetMETAnalysis.JetAnalyzers.<filename without extension>")
+except ImportError:
+    print "Couldn't open the external list of files from DAS. If you just checkout out the JetResponseAnalyzer package you will need to make this file yourself. Currently Falling back to opening the list hard-coded in run_JRA_cfg.py. This is not a bad action as long as it is what you intended to have happen."
+    inputFiles = cms.untracked.vstring()
+    process.source = cms.Source("PoolSource", fileNames = inputFiles )
 
 
 #!
-#! MODULES
+#! SERVICES
 #!
-for (counter, algorithm) in enumerate(algorithms):
+process.load('FWCore.MessageLogger.MessageLogger_cfi')
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
+process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(True))
+if doProducer:
+    process.add_(cms.Service("Tracer"))
+    process.options.numberOfThreads = cms.untracked.uint32(8)
+    process.options.numberOfStreams = cms.untracked.uint32(0)
+else:
+    process.load('CommonTools.UtilAlgos.TFileService_cfi')
+    process.TFileService.fileName=cms.string('JRA.root')
 
-	sequence = cms.Sequence()
-
-	#!
-	#! MODULES/PARAMETERS
-	#!
-	jra = cms.EDAnalyzer('jet_response_analyzer',
-		#-----Program Level Inputs
-		Defaults.jet_response_parameters,
-		#algs              = cms.vstring("ak3pfchs","ak4pfchs","ak5pfchs","ak6pfchs","ak7pfchs","ak8pfchs","ak9pfchs","ak10pfchs"),#,"ak3pfchsl1","ak4pfchsl1","ak5pfchsl1","ak6pfchsl1","ak7pfchsl1","ak8pfchsl1","ak9pfchsl1","ak10pfchsl1")
-		algs = cms.vstring(algorithm),
-		#drmaxs            = cms.vdouble(0.150,0.200,0.250,0.300,0.350,0.400,0.450,0.500),#,0.150,0.200,0.250,0.300,0.350,0.400,0.450,0.500)
-		drmaxs = cms.vdouble(size[counter])
-	)
-	setattr(process,algorithm,jra)
-	sequence = cms.Sequence(sequence * jra)
-	setattr(process, algorithm + 'Sequence', sequence)
-
-	path = cms.Path( sequence )
-	setattr(process, algorithm + 'Path', path)
-	print algorithm
 
 #!
-#! PATH
+#! NEEDED FOR PFCHS
 #!
-#process.p = cms.Path(process.jra)
+process.load('CommonTools.ParticleFlow.pfNoPileUpJME_cff')
+process.pfPileUpJME.checkClosestZVertex = False
 
-#process.options.wantSummary = True
-process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
+
+#!
+#! JET & REFERENCE KINEMATIC CUTS
+#!
+import JetMETAnalysis.JetAnalyzers.Defaults_cff as Defaults
+
+
+#!
+#! RUN JET RESPONSE ANALYZER
+#!
+
+# set to False to use jets from the input file (NOT RECOMMENDED)
+doJetReco = True
+outCom = cms.untracked.vstring('drop *')
+from JetMETAnalysis.JetAnalyzers.addAlgorithm import addAlgorithm
+for algorithm in algorithms:
+    if (algorithm.find('HLT') > 0) :
+        process.load("Configuration.Geometry.GeometryIdeal_cff")
+        process.load("Configuration.StandardSequences.MagneticField_cff")
+        addAlgorithm(process,algorithm,Defaults,False,doProducer)
+    else:
+        addAlgorithm(process,algorithm,Defaults,doJetReco,doProducer)
+    outCom.extend(['keep *_'+algorithm+'_*_*'])
+
+
+#!
+#! Check the keep and drop commands being added to the outputCommamnds
+#!
+printOC = False
+if printOC:
+    for oc in outCom:
+        print oc
+
+
+#!
+#! Output
+#!
+if doProducer:
+    process.out = cms.OutputModule("PoolOutputModule",
+				   fileName = cms.untracked.string('JRAP.root'),
+				   outputCommands = outCom
+				   )
+    process.e = cms.EndPath(process.out)
+
+
+#!
+#! THAT'S ALL! CAN YOU BELIEVE IT? :-D
+#!
+
+#Not sure what this does
+#processDumpFile = open('runJRA.dump' , 'w')
+#print >> processDumpFile, process.dumpPython()
+process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
+process.options.allowUnscheduled = cms.untracked.bool(True)
