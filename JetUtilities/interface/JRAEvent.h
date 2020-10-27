@@ -80,6 +80,10 @@ public :
    vector<Int_t>*   refpdgid_physicsDef;
    vector<Float_t>* refe;
    vector<Float_t>* refpt;
+   vector<Float_t>* refnMult;
+   vector<Float_t>* refchMult;
+   vector<Float_t>* jtnMult;
+   vector<Float_t>* jtchMult;
    vector<Float_t>* refeta;
    vector<Float_t>* refphi;
    vector<Float_t>* refy;
