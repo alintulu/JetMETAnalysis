@@ -24,6 +24,7 @@
 <bin   name="jet_weighted_spectrum_x"          file="jet_weighted_spectrum_x.cc" />
 <bin   name="jet_deltar_efficiency_x"          file="jet_deltar_efficiency_x.cc" />
 <bin   name="jet_matching_efficiency_x"        file="jet_matching_efficiency_x.cc" />
+<bin   name="jet_match_x"                      file="jet_match_x.cc" />
 <bin   name="jet_response_vs_deltar_x"         file="jet_response_vs_deltar_x.cc" />
 <bin   name="jet_correction_analyzer_x"        file="jet_correction_analyzer_x.cc" />
 <bin   name="jet_draw_corrections_x"           file="jet_draw_corrections_x.cc" />
