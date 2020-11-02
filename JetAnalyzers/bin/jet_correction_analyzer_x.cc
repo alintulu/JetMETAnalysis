@@ -170,6 +170,8 @@ int main(int argc, char **argv)
    TString weightfilename = cl.getValue<TString>("weightfilename", "");
    TString MCPUReWeighting = cl.getValue<TString>("MCPUReWeighting", "");
    TString DataPUReWeighting = cl.getValue<TString>("DataPUReWeighting", "");
+   string MCPUHistoName = cl.getValue<string>("MCPUHistoName", "pileup");
+   string DataPUHistoName = cl.getValue<string>("DataPUHistoName", "pileup");
    bool mpv = cl.getValue<bool>("mpv", false);
    TString readRespVsPileup = cl.getValue<TString>("readRespVsPileup", "");
    bool verbose = cl.getValue<bool>("verbose", false);
@@ -222,7 +224,7 @@ int main(int argc, char **argv)
    edm::LumiReWeighting LumiWeights_;
    if (!MCPUReWeighting.IsNull() && !DataPUReWeighting.IsNull())
    {
-      LumiWeights_ = edm::LumiReWeighting(string(MCPUReWeighting), string(DataPUReWeighting), "h_pileup", "pileup");
+      LumiWeights_ = edm::LumiReWeighting(string(MCPUReWeighting), string(DataPUReWeighting), MCPUHistoName, DataPUHistoName);
    }
 
    if (!outputDir.IsNull() && !outputDir.EndsWith("/"))
