@@ -19,6 +19,7 @@
 #include "PhysicsTools/Utilities/interface/LumiReWeighting.h"
 #if __has_include("xrootd/XrdCl/XrdClFileSystem.hh")
 #include "xrootd/XProtocol/XProtocol.hh"
+#include "xrootd/XrdCl/XrdClXRootDResponses.hh"
 #include "xrootd/XrdCl/XrdClFileSystem.hh"
 #define has_xrdcl 1
 #else
