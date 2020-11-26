@@ -216,7 +216,7 @@ int main(int argc,char**argv)
 
    edm::LumiReWeighting LumiWeights_;
    if(!MCPUReWeighting.IsNull() && !DataPUReWeighting.IsNull()) {
-      LumiWeights_ = edm::LumiReWeighting(string(MCPUReWeighting),string(DataPUReWeighting),"h_pileup","pileup");
+      LumiWeights_ = edm::LumiReWeighting(string(MCPUReWeighting),string(DataPUReWeighting),"pileup","pileup");
    }
 
    if(!outputDir.IsNull() && !outputDir.EndsWith("/")) outputDir += "/";
