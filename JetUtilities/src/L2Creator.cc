@@ -196,7 +196,17 @@ void L2Creator::loopOverAlgorithms(string makeCanvasVariable) {
         // Check that the FormulaEvaluator returns the same value as the TF1 used to create the fit
         // This is necessary because several times in the past the FormulaEvaluator has returned strange values
         //
-        assert(checkFormulaEvaluator());
+        //assert(checkFormulaEvaluator());
+
+        cout << "Checking FormulaEvaluator" << endl;
+
+        bool formulaEvaluator = checkFormulaEvaluator();
+
+        if (formulaEvaluator) {
+            cout << "INFO | FormulaEvaluator worked" << endl;
+        } else {
+            cout << "WARNING | FormulaEvaluator did not work" << endl;
+        }
 
         //
         // Draw several canvases of the graphs and associated fits
